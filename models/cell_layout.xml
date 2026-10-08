@@ -1,0 +1,25 @@
+<mujoco>
+    <worldbody>
+        <!-- Industrial Solid Floor (Lowered by 0.2m so the robot base is above it) -->
+        <geom name="floor" type="plane" size="6 4 0.1" pos="0 0 -0.2" material="matfloor"/> 
+        
+        <!-- 12m x 8m Footprint Visual Boundary Posts -->
+        <geom name="post_nw" type="box" size="0.1 0.1 1.0" pos="-5.9  3.9 0.8" rgba="0.9 0.8 0.1 1"/>
+        <geom name="post_ne" type="box" size="0.1 0.1 1.0" pos=" 5.9  3.9 0.8" rgba="0.9 0.8 0.1 1"/>
+        <geom name="post_sw" type="box" size="0.1 0.1 1.0" pos="-5.9 -3.9 0.8" rgba="0.9 0.8 0.1 1"/>
+        <geom name="post_se" type="box" size="0.1 0.1 1.0" pos=" 5.9 -3.9 0.8" rgba="0.9 0.8 0.1 1"/>
+        
+        <!-- Linear Rail System for Robot 
+             Centered at X=0, shifted to Y=-2.1 to provide a 1.2m gap from the side of the car -->
+        <geom name="rail_bed" type="box" size="2.7 0.4 0.08" pos="0 -2.1 -0.12" rgba="0.2 0.2 0.2 1" contype="0" conaffinity="0"/>
+        <geom name="rail_guide1" type="box" size="2.7 0.05 0.02" pos="0 -1.9 -0.02" rgba="0.8 0.8 0.8 1" contype="0" conaffinity="0"/>
+        <geom name="rail_guide2" type="box" size="2.7 0.05 0.02" pos="0 -2.3 -0.02" rgba="0.8 0.8 0.8 1" contype="0" conaffinity="0"/>
+
+        <!-- Car Support Wedge / AGV 
+             Centered perfectly under the physical car (X=0, Y=0) -->
+        <geom name="car_support" type="box" size="1.2 0.6 0.2" pos="0 0 0.0" rgba="0.15 0.15 0.15 1"/>
+        
+        <!-- Target Spray Standoff visualization site (250mm) -->
+        <site name="standoff_target" pos="0 -0.9 0.5" size="0.02" rgba="0 1 0 0.5"/>
+    </worldbody>
+</mujoco>

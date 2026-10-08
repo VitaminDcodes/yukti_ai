@@ -1,0 +1,34 @@
+<mujoco>
+    <compiler angle="radian" meshdir="." />
+    
+    <asset>
+        <!-- Exact Scale for 4.8m x 1.9m x 1.6m based on STL bounds -->
+        <mesh name="car_mesh" file="../assets/car/car_body.stl" scale="0.0010565 0.001071 0.001209" />
+        <texture type="skybox" builtin="gradient" rgb1="0.4 0.5 0.6" rgb2="0.1 0.1 0.1" width="512" height="512"/>
+        <material name="matfloor" reflectance="0.1" rgba="0.3 0.3 0.3 1"/>
+    </asset>
+
+    <visual>
+        <map force="0.1" zfar="30"/>
+        <rgba haze="0.15 0.25 0.35 1"/>
+        <quality shadowsize="4096"/>
+        <global offwidth="1024" offheight="1024"/>
+    </visual>
+
+    <!-- Include Robot on Rail -->
+    <include file="ur10e_rail.xml"/>
+
+    <worldbody>
+        <light pos="0 0 5" dir="0 0 -1" directional="true" castshadow="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2"/>
+        <light pos="0 3 4" dir="0 -1 -1" directional="true" castshadow="false" diffuse="0.4 0.4 0.4"/>
+        <light pos="0 -3 4" dir="0 1 -1" directional="true" castshadow="false" diffuse="0.4 0.4 0.4"/>
+        
+        <!-- The Car Body (White BIW) -->
+        <body name="car" pos="-1.452 0 0.2">
+            <geom type="mesh" mesh="car_mesh" rgba="0.95 0.95 0.95 1"/>
+        </body>
+    </worldbody>
+
+    <!-- Include Cell Layout (Floor, Rail visuals, Pedestals) -->
+    <include file="cell_layout.xml"/>
+</mujoco>
