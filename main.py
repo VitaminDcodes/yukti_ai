@@ -26,6 +26,10 @@ def main():
     print("  AUTOMOTIVE ROBOTIC PAINTING CELL - MUJOCO SIMULATION")
     print("  Kinematics : Analytical Inverse Kinematics (UR10e + Linear Rail)")
     print("  Deposition : Physical Spray Model + Real-Time Gloss Red Coating")
+    import sys
+    pattern = 1 if ('--pattern1' in sys.argv or '--pattern=1' in sys.argv) else 2
+    pattern_name = "Pattern 1 (Sinusoidal Wave)" if pattern == 1 else "Pattern 2 (Vertical Raster Lines + Sidewise Steps)"
+    print(f"  Trajectory : {pattern_name}")
     print("=" * 72)
 
     # 1. Load MuJoCo model and data
@@ -39,9 +43,8 @@ def main():
     spray_vis = SprayVisualizer(cone_angle_deg=20.0)
 
     # 3. Determine starting trajectory waypoint at t=0
-    target_pos_0, target_rot_0 = get_industrial_curved_waypoint(0.0)
+    target_pos_0, target_rot_0 = get_industrial_curved_waypoint(0.0, pattern=pattern)
 
-    # Solve initial analytical IK for starting posture
     # Solve initial analytical IK for starting posture (aligned with user-verified configuration)
     initial_q_guess = np.array([2.2, -1.76, -1.0, 0.9, 0.1, -1.76, 0.0])
     q_start = ik_controller.solve_target_pose(target_pos_0, target_rot_0, initial_q_guess)
@@ -56,10 +59,11 @@ def main():
     print(f"[INIT] Start Arm Joints    : {np.round(q_start[1:], 3)}")
     print(f"[INIT] Target TCP Position : {np.round(target_pos_0, 3)} m")
     print(f"[INIT] Paint Grid Size     : {painter.res_x} x {painter.res_z} pixels")
+    print(f"[INIT] Active Pattern      : {pattern_name}")
     print("-" * 72)
     print("Launching MuJoCo 3D Viewer... (Press ESC in the viewer to exit)\n")
 
-    traj_duration = get_trajectory_duration()
+    traj_duration = get_trajectory_duration(pattern=pattern)
     dt = model.opt.timestep
     sim_time = 0.0
     step_count = 0
@@ -75,8 +79,8 @@ def main():
 
             # Execute physics and coating substeps per visual frame
             for _ in range(substeps):
-                # 1. Get current trajectory target waypoint (brisk bidirectional sweeping)
-                target_pos, target_rot = get_industrial_curved_waypoint(sim_time)
+                # 1. Get current trajectory target waypoint
+                target_pos, target_rot = get_industrial_curved_waypoint(sim_time, pattern=pattern)
 
                 # 2. Compute 7-DOF Analytical Inverse Kinematics (Rail + Arm)
                 q_target = ik_controller.solve_target_pose(target_pos, target_rot, data.qpos)

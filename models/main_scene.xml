@@ -8,8 +8,8 @@
         <texture type="2d" name="texplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="512" height="512"/>
         <material name="matfloor" texture="texplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
         
-        <!-- Dynamic Automotive Paint Texture & Gloss Material -->
-        <texture type="2d" name="car_paint_tex" builtin="flat" width="512" height="512" rgb1="0.95 0.95 0.95"/>
+        <!-- Dynamic Automotive Paint Texture (1024x512: Left 512x512 is robot side, Right 512x512 is unpainted side) -->
+        <texture type="2d" name="car_paint_tex" builtin="flat" width="1024" height="512" rgb1="0.95 0.95 0.95"/>
         <material name="car_paint_mat" texture="car_paint_tex" reflectance="0.25" specular="0.6"/>
     </asset>
 

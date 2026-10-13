@@ -61,10 +61,12 @@ class SurfacePainter:
         self.total_paint_sprayed_ml = 0.0
 
     def _init_texture_buffer(self):
-        """Initializes MuJoCo texture buffer to primer white [242, 242, 242]."""
-        tex_bytes = self.physics.thickness_to_rgb(self.thickness_map)
-        tex_slice = self.model.tex_data[self.tex_adr : self.tex_adr + self.res_z * self.res_x * 3]
-        tex_slice[:] = tex_bytes.flatten()
+        """Initializes MuJoCo texture buffer to primer white [245, 245, 245]."""
+        total_bytes = self.tex_height * self.tex_width * 3
+        tex_buf = self.model.tex_data[self.tex_adr : self.tex_adr + total_bytes].reshape(
+            self.tex_height, self.tex_width, 3
+        )
+        tex_buf[:] = self.physics.base_color.astype(np.uint8)
 
     def update(self, tcp_world_pos: np.ndarray, spray_dir: np.ndarray, dt: float, viewer=None):
         """
@@ -87,10 +89,10 @@ class SurfacePainter:
         c_min = int(np.clip((x_c - radius - self.x_min) / (self.x_max - self.x_min) * (self.res_x - 1), 0, self.res_x - 1))
         c_max = int(np.clip((x_c + radius - self.x_min) / (self.x_max - self.x_min) * (self.res_x - 1) + 1, 0, self.res_x))
 
-        # Vertical row indices: Z is inverted in image/texture buffer
-        # High Z (roof) maps to row 0, Low Z (skirt) maps to row H-1
-        r_min = int(np.clip((self.z_max - (z_c + radius)) / (self.z_max - self.z_min) * (self.res_z - 1), 0, self.res_z - 1))
-        r_max = int(np.clip((self.z_max - (z_c - radius)) / (self.z_max - self.z_min) * (self.res_z - 1) + 1, 0, self.res_z))
+        # Vertical row indices: V is directly proportional to World Z in the mesh
+        # Low Z (rocker/ground) maps to row 0, High Z (roof/cowl) maps to row H-1
+        r_min = int(np.clip((z_c - radius - self.z_min) / (self.z_max - self.z_min) * (self.res_z - 1), 0, self.res_z - 1))
+        r_max = int(np.clip((z_c + radius - self.z_min) / (self.z_max - self.z_min) * (self.res_z - 1) + 1, 0, self.res_z))
 
         if c_max <= c_min or r_max <= r_min:
             return
@@ -101,7 +103,7 @@ class SurfacePainter:
         col_grid, row_grid = np.meshgrid(sub_cols, sub_rows)
 
         sub_x = self.x_min + col_grid / (self.res_x - 1) * (self.x_max - self.x_min)
-        sub_z = self.z_max - row_grid / (self.res_z - 1) * (self.z_max - self.z_min)
+        sub_z = self.z_min + row_grid / (self.res_z - 1) * (self.z_max - self.z_min)
 
         dx = sub_x - x_c
         dz = sub_z - z_c
@@ -127,9 +129,10 @@ class SurfacePainter:
         updated_patch_T = self.thickness_map[r_min:r_max, c_min:c_max]
         patch_rgb = self.physics.thickness_to_rgb(updated_patch_T)
 
-        # Write directly into MuJoCo model.tex_data buffer
-        tex_buf = self.model.tex_data[self.tex_adr : self.tex_adr + self.res_z * self.res_x * 3].reshape(
-            self.res_z, self.res_x, 3
+        # Write directly into MuJoCo model.tex_data buffer (left half: robot-side canvas)
+        total_bytes = self.tex_height * self.tex_width * 3
+        tex_buf = self.model.tex_data[self.tex_adr : self.tex_adr + total_bytes].reshape(
+            self.tex_height, self.tex_width, 3
         )
         tex_buf[r_min:r_max, c_min:c_max] = patch_rgb
 
